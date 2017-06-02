@@ -92,15 +92,12 @@ func TestMarshalUnmarshal(t *testing.T) {
 
 	for _, encType := range encoderTypes {
 
-		enc, err := Create(encType, testServ, testDB, testTable)
-		test.CheckFail(err, t)
-
 		for _, cf := range testBasicResult {
 			log.Debugf("Initial CF: %v\n", cf)
-			encoded, err := enc.CommonFormat(&cf)
+			encoded, err := CommonFormatEncode(&cf, encType)
 			test.CheckFail(err, t)
 
-			decoded, err := enc.DecodeToCommonFormat(encoded)
+			decoded, err := DecodeToCommonFormat(encoded, encType)
 			log.Debugf("Post CF: %v\n", decoded)
 			test.CheckFail(err, t)
 
@@ -113,11 +110,9 @@ func TestUnmarshalError(t *testing.T) {
 	Prepare(t, testBasicPrepare)
 
 	for _, encType := range encoderTypes {
-		enc, err := Create(encType, testServ, testDB, testTable)
-		test.CheckFail(err, t)
 
 		for _, encoded := range testErrorDecoding {
-			_, err := enc.DecodeToCommonFormat(encoded)
+			_, err := DecodeToCommonFormat(encoded, encType)
 			test.Assert(t, err != nil, "not getting an error from garbage input")
 		}
 	}

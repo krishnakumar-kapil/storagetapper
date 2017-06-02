@@ -21,10 +21,12 @@
 package encoder
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
 	"github.com/uber/storagetapper/types"
+	msgpack "gopkg.in/vmihailenco/msgpack.v2"
 )
 
 //encoderConstructor initializes encoder plugin
@@ -48,7 +50,6 @@ type Encoder interface {
 	UpdateCodec() error
 	Type() string
 	Schema() *types.TableSchema
-	DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error)
 }
 
 //Create is a factory which create encoder of given type for given service, db,
@@ -92,4 +93,25 @@ func GetCommonFormatKey(cf *types.CommonFormatEvent) string {
 		key += fmt.Sprintf("%v%v", len(s), s)
 	}
 	return key
+}
+
+func CommonFormatEncode(c *types.CommonFormatEvent, encType string) ([]byte, error) {
+	if encType == "json" {
+		return json.Marshal(c)
+	} else if encType == "msgpack" {
+		return msgpack.Marshal(c)
+	} else {
+		return nil, fmt.Errorf("Use supported encoders")
+	}
+}
+
+func DecodeToCommonFormat(b []byte, encType string) (*types.CommonFormatEvent, error) {
+	res := &types.CommonFormatEvent{}
+	var err error
+	if encType == "json" {
+		err = json.Unmarshal(b, res)
+	} else if encType == "msgpack" {
+		err = msgpack.Unmarshal(b, res)
+	}
+	return res, err
 }

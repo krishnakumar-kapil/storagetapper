@@ -22,7 +22,6 @@ package encoder
 
 import (
 	"github.com/uber/storagetapper/types"
-	msgpack "gopkg.in/vmihailenco/msgpack.v2"
 )
 
 func init() {
@@ -49,13 +48,10 @@ func (e *msgPackEncoder) Type() string {
 // By overriding these 2 methods we get full functionality of commonFormatEncoder
 // that implements MessagePack
 func (e *msgPackEncoder) CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
-	bd, err := msgpack.Marshal(c)
-	return bd, err
+	return CommonFormatEncode(c, "msgpack")
 }
 
 // CommonFormatDecode decodes CommonFormatEvent from byte array based on the msgpack encoding system
 func (e *msgPackEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
-	res := &types.CommonFormatEvent{}
-	err := msgpack.Unmarshal(c, res)
-	return res, err
+	return DecodeToCommonFormat(c, "msgpack")
 }

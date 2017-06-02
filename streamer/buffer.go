@@ -78,12 +78,17 @@ func (s *Streamer) encodeCommonFormat(data []byte) (key string, outMsg []byte, e
 		if log.EL(s.log, err) {
 			return
 		}
-		outMsg, err = s.encoder.CommonFormat(cfEvent)
+		var ev *types.CommonFormatEvent
+		ev, err = encoder.DecodeToCommonFormat(buf.Bytes(), "json")
+		if log.EL(s.log, err) {
+			return
+		}
+		outMsg, err = s.encoder.CommonFormat(ev)
 		if log.EL(s.log, err) {
 			return
 		}
 
-		key = encoder.GetCommonFormatKey(cfEvent)
+		key = encoder.GetCommonFormatKey(ev)
 	} else {
 		err = fmt.Errorf("Unsupported conversion from: %v to %v", cfEvent.Type, s.outputFormat)
 	}
