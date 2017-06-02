@@ -1,84 +1,103 @@
-hash: 97fb5538e4f9eaf1e3ce4eaf6f6ac8f99d0402c16ad24fcf3c68ce5a393bf158
-updated: 2017-05-14T21:50:38.396697025-07:00
+hash: 683726802147f81737c1155b3e2ed039d816e1053bcd8c91b33e6453e8c8df11
+updated: 2017-06-02T16:44:08.204686834Z
 imports:
 - name: github.com/cactus/go-statsd-client
-  version: 91c326c3f7bd20f0226d3d1c289dd9f8ce28d33d
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - statsd
 - name: github.com/davecgh/go-spew
-  version: 346938d642f2ec3594ed81d874461961cd0faa76
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - spew
 - name: github.com/eapache/go-resiliency
-  version: ed0319b32e66e3295db52695ba3ee493e823fbfe
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - breaker
 - name: github.com/eapache/go-xerial-snappy
-  version: bb955e01b9346ac19dc29eb16586c90ded99a98c
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/eapache/queue
-  version: d1df561eb6b9ffdac8dd98f943e9e9096c76c059
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/fsnotify/fsnotify
-  version: 629574ca2a5df945712d3079857300b5e4da0236
+  version: ""
 - name: github.com/go-sql-driver/mysql
-  version: a0583e0143b1624142adab07e0e97fe106d99561
+  version: ""
+- name: github.com/golang/protobuf
+  version: 5a0f697c9ed9d68fef0116532c6e05cfeae00e55
+  subpackages:
+  - proto
 - name: github.com/golang/snappy
-  version: d7b1e156f50d3c4664f683603af70e3e47fa0aa2
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/juju/errors
-  version: 6f54ff6318409d31ff16261533ce2c8381a4fd5d
+  version: ""
 - name: github.com/klauspost/crc32
-  version: cb6bfca970f6908083f26f39a79009d608efd5cd
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/linkedin/goavro
-  version: 44e21733ba10332b88303373cac586154316aa5c
+  version: ""
 - name: github.com/ngaut/log
-  version: cec23d3e10b016363780d894a0eb732a12c06e02
+  version: ""
 - name: github.com/pierrec/lz4
-  version: f5b77fd73d83122495309c0f459b810f83cc291f
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/pierrec/xxHash
-  version: 5a004441f897722c627870a981d02b29924215fa
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - xxHash32
 - name: github.com/rcrowley/go-metrics
-  version: eeba7bd0dd01ace6e690fa833b3f22aaec29af43
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/Shopify/sarama
-  version: 0fb560e5f7fbcaee2f75e3c34174320709f69944
+  version: ""
 - name: github.com/siddontang/go
-  version: 354e14e6c093c661abb29fd28403b3c19cff5514
+  version: ""
   subpackages:
   - hack
   - ioutil2
   - sync2
 - name: github.com/siddontang/go-mysql
-  version: fbb2f2f74678817ea49bfde307583242aea6edd2
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
-  - client
   - mysql
-  - packet
   - replication
+  - client
+  - packet
 - name: github.com/Sirupsen/logrus
-  version: ba1b36c82c5e05c4f912a88eab0dcd91a171688f
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: github.com/uber-common/bark
-  version: 1276fd80f25d786f9cff3ccce89c0c43e5b2667e
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
 - name: go.uber.org/atomic
-  version: 4e336646b2ef9fc6e47be8e21594178f98e5ebcf
+  version: ""
 - name: go.uber.org/zap
-  version: fab453050a7a08c35f31fc5fff6f2dbd962285ab
+  version: ""
   subpackages:
-  - buffer
+  - zapcore
   - internal/bufferpool
+  - internal/multierror
+  - buffer
   - internal/color
   - internal/exit
-  - internal/multierror
-  - zapcore
 - name: golang.org/x/net
-  version: 6acef71eb69611914f7a30939ea9f6e194c78172
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - context
 - name: golang.org/x/sys
-  version: d4feaf1a7e61e1d9e79e6c4e76c6349e9cab0a03
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
   subpackages:
   - unix
+- name: google.golang.org/appengine
+  version: a2f4131514e563cedfdb6e7d267df9ad48591e93
+  subpackages:
+  - datastore
+  - internal
+  - internal/datastore
+  - internal/app_identity
+  - internal/modules
+  - internal/base
+  - internal/log
+  - internal/remote_api
+- name: gopkg.in/vmihailenco/msgpack.v2
+  version: f4f8982de4ef0de18be76456617cc3f5d8d8141e
+  subpackages:
+  - codes
 - name: gopkg.in/yaml.v2
-  version: a83829b6f1293c91addabc89d0571c246397bbf4
-testImports: []
+  version: 0989daee24d5c86a37550a21f4ecb133fa4b05eb
+devImports: []
