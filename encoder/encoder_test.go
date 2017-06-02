@@ -21,18 +21,18 @@
 package encoder
 
 import (
-	"testing"
-    "os"
 	"database/sql"
-    "reflect"
+	"os"
+	"reflect"
+	"testing"
 
-    "github.com/uber/storagetapper/test"
+	"github.com/uber/storagetapper/config"
 	"github.com/uber/storagetapper/db"
-    "github.com/uber/storagetapper/config"
-    "github.com/uber/storagetapper/types"
-    "github.com/uber/storagetapper/state"
+	"github.com/uber/storagetapper/log"
+	"github.com/uber/storagetapper/state"
+	"github.com/uber/storagetapper/test"
+	"github.com/uber/storagetapper/types"
 	"github.com/uber/storagetapper/util"
-    "github.com/uber/storagetapper/log"
 )
 
 var cfg *config.AppConfig
@@ -41,9 +41,9 @@ var testDB = "db1"
 var testTable = "t1"
 
 var encoderTypes = []string{
-    "json",
-    "msgpack",
-    // TODO: "avro", Seems like avro needs some different setup to run these 
+	"json",
+	"msgpack",
+	// TODO: "avro", Seems like avro needs some different setup to run these
 }
 
 var testBasicResult = []types.CommonFormatEvent{
@@ -57,9 +57,9 @@ var testBasicResult = []types.CommonFormatEvent{
 }
 
 var testErrorDecoding = [][]byte{
-    []byte("123234"),
-    []byte("1231224212324132"),
-    []byte("asdfasdcasfa"),
+	[]byte("123234"),
+	[]byte("1231224212324132"),
+	[]byte("asdfasdcasfa"),
 }
 
 var testBasicPrepare = []string{
@@ -78,49 +78,49 @@ var testBasicPrepare = []string{
 
 // TestGetType tests basic type method
 func TestType(t *testing.T) {
-    Prepare(t, testBasicPrepare)
+	Prepare(t, testBasicPrepare)
 
-    for _, encType := range encoderTypes {
-        enc, err := Create(encType, testServ, testDB, testTable)
-        test.CheckFail(err, t)
-        test.Assert(t, enc.Type() == encType, "type diff")
-    }
+	for _, encType := range encoderTypes {
+		enc, err := Create(encType, testServ, testDB, testTable)
+		test.CheckFail(err, t)
+		test.Assert(t, enc.Type() == encType, "type diff")
+	}
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
-    Prepare(t, testBasicPrepare)
+	Prepare(t, testBasicPrepare)
 
-    for _, encType := range encoderTypes {
+	for _, encType := range encoderTypes {
 
-        enc, err := Create(encType, testServ, testDB, testTable)
-        test.CheckFail(err, t)
+		enc, err := Create(encType, testServ, testDB, testTable)
+		test.CheckFail(err, t)
 
-        for _, cf := range testBasicResult {
-            log.Debugf("Initial CF: %v\n",cf)
-            encoded, err := enc.CommonFormat(&cf)
-            test.CheckFail(err, t)
+		for _, cf := range testBasicResult {
+			log.Debugf("Initial CF: %v\n", cf)
+			encoded, err := enc.CommonFormat(&cf)
+			test.CheckFail(err, t)
 
-            decoded, err := enc.DecodeToCommonFormat(encoded)
-            log.Debugf("Post CF: %v\n",decoded)
-            test.CheckFail(err, t)
+			decoded, err := enc.DecodeToCommonFormat(encoded)
+			log.Debugf("Post CF: %v\n", decoded)
+			test.CheckFail(err, t)
 
-            test.Assert(t, reflect.DeepEqual(&cf, decoded), "decoded different from initial")
-        }
-    }
+			test.Assert(t, reflect.DeepEqual(&cf, decoded), "decoded different from initial")
+		}
+	}
 }
 
 func TestUnmarshalError(t *testing.T) {
-    Prepare(t, testBasicPrepare)
+	Prepare(t, testBasicPrepare)
 
-    for _, encType := range encoderTypes {
-        enc, err := Create(encType, testServ, testDB, testTable)
-        test.CheckFail(err, t)
+	for _, encType := range encoderTypes {
+		enc, err := Create(encType, testServ, testDB, testTable)
+		test.CheckFail(err, t)
 
-        for _, encoded := range testErrorDecoding {
-            _, err := enc.DecodeToCommonFormat(encoded)
-            test.Assert(t, err != nil, "not getting an error from garbage input")
-        }
-    }
+		for _, encoded := range testErrorDecoding {
+			_, err := enc.DecodeToCommonFormat(encoded)
+			test.Assert(t, err != nil, "not getting an error from garbage input")
+		}
+	}
 
 }
 
@@ -130,33 +130,33 @@ func ExecSQL(db *sql.DB, t *testing.T, query string) {
 	test.CheckFail(util.ExecSQL(db, query), t)
 }
 
-func Prepare(t *testing.T, create[] string) {
-    test.SkipIfNoMySQLAvailable(t)
+func Prepare(t *testing.T, create []string) {
+	test.SkipIfNoMySQLAvailable(t)
 
 	dbc, err := db.OpenService(&db.Loc{Cluster: "test_cluster1", Service: "test_svc1"}, "")
 	test.CheckFail(err, t)
 
-    ExecSQL(dbc, t, "RESET MASTER")
+	ExecSQL(dbc, t, "RESET MASTER")
 	ExecSQL(dbc, t, "SET GLOBAL binlog_format = 'ROW'")
 	ExecSQL(dbc, t, "SET GLOBAL server_id=1")
 	ExecSQL(dbc, t, "DROP TABLE IF EXISTS "+types.MyDbName+".state")
 	ExecSQL(dbc, t, "DROP TABLE IF EXISTS "+types.MyDbName+".columns")
 
 	log.Debugf("Preparing database")
-    if !state.Init(cfg) {
-        t.FailNow()
-    }
+	if !state.Init(cfg) {
+		t.FailNow()
+	}
 
-    for _, s := range create {
-        ExecSQL(dbc, t, s)
-    }
+	for _, s := range create {
+		ExecSQL(dbc, t, s)
+	}
 
-    if !state.RegisterTable(&db.Loc{Cluster: "test_cluster1", Service: "test_svc1", Name: "db1"}, "t1", "mysql", "") {
+	if !state.RegisterTable(&db.Loc{Cluster: "test_cluster1", Service: "test_svc1", Name: "db1"}, "t1", "mysql", "") {
 		t.FailNow()
 	}
 }
 
 func TestMain(m *testing.M) {
-    cfg = test.LoadConfig()
-    os.Exit(m.Run())
+	cfg = test.LoadConfig()
+	os.Exit(m.Run())
 }

@@ -77,8 +77,6 @@ func (e *commonFormatEncoder) Row(tp int, row *[]interface{}, seqno uint64) ([]b
 	return e.CommonFormatEncode(cf)
 }
 
-
-
 //CommonFormat encodes common format event into byte array
 func (e *commonFormatEncoder) CommonFormat(cf *types.CommonFormatEvent) ([]byte, error) {
 	if cf.Type == "schema" {
@@ -120,7 +118,7 @@ func (e *commonFormatEncoder) UpdateCodec() error {
 }
 
 func (e *commonFormatEncoder) DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error) {
-   return e.CommonFormatDecode(b)
+	return e.CommonFormatDecode(b)
 }
 
 func (e *commonFormatEncoder) updateCodecFromDB() error {

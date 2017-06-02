@@ -21,30 +21,30 @@
 package encoder
 
 import (
-    msgpack "gopkg.in/vmihailenco/msgpack.v2" 
-    "github.com/uber/storagetapper/types"
+	"github.com/uber/storagetapper/types"
+	msgpack "gopkg.in/vmihailenco/msgpack.v2"
 )
 
 func init() {
-    registerPlugin("msgpack", initMsgPackEncoder)
+	registerPlugin("msgpack", initMsgPackEncoder)
 }
 
 // msgPackEncoder implements Encoder interface into message pack format.
 // It inherits the methods from commonFormatEnocder.
 type msgPackEncoder struct {
-    commonFormatEncoder
+	commonFormatEncoder
 }
 
-func initMsgPackEncoder(service string, db string, table string) (Encoder, error){
-    return &msgPackEncoder{commonFormatEncoder{Service: service, Db: db, Table: table}}, nil
+func initMsgPackEncoder(service string, db string, table string) (Encoder, error) {
+	return &msgPackEncoder{commonFormatEncoder{Service: service, Db: db, Table: table}}, nil
 }
 
 //Type returns this encoder type
-func (e *msgPackEncoder) Type() string{
-    return "msgpack"
+func (e *msgPackEncoder) Type() string {
+	return "msgpack"
 }
 
-// CommonFormatEncode encodes CommonFormatEvent into byte array based on the message pack 
+// CommonFormatEncode encodes CommonFormatEvent into byte array based on the message pack
 // encoding system
 // By overriding these 2 methods we get full functionality of commonFormatEncoder
 // that implements MessagePack
@@ -59,5 +59,3 @@ func (e *msgPackEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent,
 	err := msgpack.Unmarshal(c, res)
 	return res, err
 }
-
-

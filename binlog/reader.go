@@ -294,7 +294,7 @@ func (b *reader) wrapEvent(e encoder.Encoder, key string, bd []byte, seqno uint6
 		Fields:    nil,
 	}
 
-    cfb, err := e.CommonFormat(&cfw)
+	cfb, err := e.CommonFormat(&cfw)
 	if err != nil {
 		return nil, err
 	}
