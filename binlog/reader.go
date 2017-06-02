@@ -282,7 +282,7 @@ func (b *reader) updateState(inc bool) bool {
 	return true
 }
 
-func (b *reader) wrapEvent(key string, bd []byte, seqno uint64) ([]byte, error) {
+func (b *reader) wrapEvent(e encoder.Encoder, key string, bd []byte, seqno uint64) ([]byte, error) {
 	akey := make([]interface{}, 1)
 	akey[0] = key
 
@@ -294,7 +294,7 @@ func (b *reader) wrapEvent(key string, bd []byte, seqno uint64) ([]byte, error) 
 		Fields:    nil,
 	}
 
-	cfb, err := encoder.CommonFormatEncode(&cfw)
+    cfb, err := e.CommonFormat(&cfw)
 	if err != nil {
 		return nil, err
 	}
@@ -320,7 +320,7 @@ func (b *reader) produceRow(tp int, t *table, row *[]interface{}) error {
 		if log.EL(b.log, err) {
 			return err
 		}
-		bd, err = b.wrapEvent(key, bd, seqno)
+		bd, err = b.wrapEvent(t.encoder, key, bd, seqno)
 		if log.EL(b.log, err) {
 			return err
 		}

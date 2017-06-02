@@ -465,7 +465,8 @@ func consumeTableEvents(pc pipe.Consumer, db string, table string, result []type
 		case *types.RowMessage:
 			b, err = enc.Row(m.Type, m.Data, m.SeqNo)
 			test.CheckFail(err, t)
-			cf, err = encoder.CommonFormatDecode(b.([]byte))
+			// cf, err = encoder.CommonFormatDecode(b.([]byte))
+			cf, err = enc.DecodeToCommonFormat(b.([]byte))
 			test.CheckFail(err, t)
 		case []byte:
 			buf := bytes.NewBuffer(b.([]byte))
@@ -478,7 +479,8 @@ func consumeTableEvents(pc pipe.Consumer, db string, table string, result []type
 			if cf.Type != "schema" {
 				_, err = buf.ReadFrom(dec.Buffered())
 				test.CheckFail(err, t)
-				cf, err = encoder.CommonFormatDecode(buf.Bytes())
+                cf, err = enc.DecodeToCommonFormat(buf.Bytes())
+				// cf, err = encoder.CommonFormatDecode(buf.Bytes())
 				test.CheckFail(err, t)
 			}
 		}

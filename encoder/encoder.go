@@ -48,6 +48,7 @@ type Encoder interface {
 	UpdateCodec() error
 	Type() string
 	Schema() *types.TableSchema
+    DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error)
 }
 
 //Create is a factory which create encoder of given type for given service, db,
@@ -60,7 +61,7 @@ func Create(encType string, s string, d string, t string) (Encoder, error) {
 		return nil, err
 	}
 
-	err = enc.UpdateCodec()
+    err = enc.UpdateCodec()
 
 	return enc, err
 }

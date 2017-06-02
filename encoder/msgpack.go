@@ -30,7 +30,7 @@ func init() {
 }
 
 // msgPackEncoder implements Encoder interface into message pack format.
-// it inherits the methods from commonFormatEnocder
+// It inherits the methods from commonFormatEnocder.
 type msgPackEncoder struct {
     commonFormatEncoder
 }
@@ -44,13 +44,16 @@ func (e *msgPackEncoder) Type() string{
     return "msgpack"
 }
 
-//CommonFormatEncode encodes CommonFormatEvent into byte array
+// CommonFormatEncode encodes CommonFormatEvent into byte array based on the message pack 
+// encoding system
+// By overriding these 2 methods we get full functionality of commonFormatEncoder
+// that implements MessagePack
 func (e *msgPackEncoder) CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
 	bd, err := msgpack.Marshal(c)
 	return bd, err
 }
 
-//CommonFormatDecode decodes CommonFormatEvent from byte array
+// CommonFormatDecode decodes CommonFormatEvent from byte array based on the msgpack encoding system
 func (e *msgPackEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
 	res := &types.CommonFormatEvent{}
 	err := msgpack.Unmarshal(c, res)

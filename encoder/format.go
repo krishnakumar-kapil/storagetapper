@@ -73,9 +73,11 @@ func (e *commonFormatEncoder) Schema() *types.TableSchema {
 
 //Row encodes row into CommonFormat
 func (e *commonFormatEncoder) Row(tp int, row *[]interface{}, seqno uint64) ([]byte, error) {
-	cf := convertRowToCommonFormat(tp, row, e.inSchema, seqno, e.filter)
-	return CommonFormatEncode(cf)
+	cf := e.convertRowToCommonFormat(tp, row, e.inSchema, seqno, e.filter)
+	return e.CommonFormatEncode(cf)
 }
+
+
 
 //CommonFormat encodes common format event into byte array
 func (e *commonFormatEncoder) CommonFormat(cf *types.CommonFormatEvent) ([]byte, error) {
@@ -87,7 +89,7 @@ func (e *commonFormatEncoder) CommonFormat(cf *types.CommonFormatEvent) ([]byte,
 	}
 	//FIXME: Assume that cf is in input schema format, so we need to filter it
 	//to conform to output schema
-	return CommonFormatEncode(cf)
+	return e.CommonFormatEncode(cf)
 }
 
 /*UpdateCodec refreshes the schema from state DB */
@@ -101,7 +103,7 @@ func (e *commonFormatEncoder) UpdateCodec() error {
 
 	s := state.GetOutputSchema(GetOutputSchemaName(e.Service, e.Db, e.Table))
 	if s != "" {
-		c, err := CommonFormatDecode([]byte(s))
+		c, err := e.CommonFormatDecode([]byte(s))
 		if err != nil {
 			return err
 		}
@@ -115,6 +117,10 @@ func (e *commonFormatEncoder) UpdateCodec() error {
 	e.prepareFilter()
 
 	return err
+}
+
+func (e *commonFormatEncoder) DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error) {
+   return e.CommonFormatDecode(b)
 }
 
 func (e *commonFormatEncoder) updateCodecFromDB() error {
@@ -132,14 +138,14 @@ func CommonFormatUpdateCodecFromDB(enc Encoder) error {
 }
 
 //CommonFormatDecode decodes CommonFormat event from byte array
-func CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
+func (e *commonFormatEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
 	res := &types.CommonFormatEvent{}
 	err := json.Unmarshal(c, res)
 	return res, err
 }
 
 //CommonFormatEncode encodes CommonFormatEvent into byte array
-func CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
+func (e *commonFormatEncoder) CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
 	bd, err := json.Marshal(c)
 	return bd, err
 }
@@ -178,7 +184,7 @@ func fillCommonFormatFields(c *types.CommonFormatEvent, row *[]interface{}, sche
 	c.Fields = &f
 }
 
-func convertRowToCommonFormat(tp int, row *[]interface{}, schema *types.TableSchema, seqNo uint64, filter []int) *types.CommonFormatEvent {
+func (e *commonFormatEncoder) convertRowToCommonFormat(tp int, row *[]interface{}, schema *types.TableSchema, seqNo uint64, filter []int) *types.CommonFormatEvent {
 	var c types.CommonFormatEvent
 
 	//log.Debugf("cf %+v %+v %+v %+v", tp, row, s, seqNo)

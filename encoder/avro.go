@@ -93,6 +93,12 @@ func (e *avroEncoder) CommonFormat(cf *types.CommonFormatEvent) ([]byte, error) 
 	return encodeAvroRecord(e.codec, r)
 }
 
+// DecodeToCommonFormat converts an avro encoded struct into the common format
+// TODO: implement DecodeToCommonFormat
+func (e *avroEncoder) DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error) {
+    return nil, fmt.Errorf("Cannot decode Avro to common format")
+}
+
 // convertCommonFormatToAvroRecord creates a new Avro record from the common format event, adding the necessary
 // metadata of row_key, ref_key and is_deleted.
 func convertCommonFormatToAvroRecord(rs goavro.RecordSetter, cfEvent *types.CommonFormatEvent, rec *goavro.Record, filter []int) {

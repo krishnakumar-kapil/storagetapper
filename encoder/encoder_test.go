@@ -25,9 +25,6 @@ import (
     "os"
 	"database/sql"
     "reflect"
-    // "fmt"
-
-	// "encoding/json"
 
     "github.com/uber/storagetapper/test"
 	"github.com/uber/storagetapper/db"
@@ -39,6 +36,9 @@ import (
 )
 
 var cfg *config.AppConfig
+var testServ = "test_svc1"
+var testDB = "db1"
+var testTable = "t1"
 
 var encoderTypes = []string{
     "json",
@@ -54,6 +54,12 @@ var testBasicResult = []types.CommonFormatEvent{
 	{Type: "insert", Key: []interface{}{12.0}, SeqNo: 4.0, Timestamp: 0, Fields: &[]types.CommonFormatField{{Name: "f1", Value: 12.0}}},
 	{Type: "delete", Key: []interface{}{1.0}, SeqNo: 5.0, Timestamp: 0, Fields: nil},
 	{Type: "insert", Key: []interface{}{3.0}, SeqNo: 6.0, Timestamp: 0, Fields: &[]types.CommonFormatField{{Name: "f1", Value: 3.0}}},
+}
+
+var testErrorDecoding = [][]byte{
+    []byte("123234"),
+    []byte("1231224212324132"),
+    []byte("asdfasdcasfa"),
 }
 
 var testBasicPrepare = []string{
@@ -75,7 +81,7 @@ func TestType(t *testing.T) {
     Prepare(t, testBasicPrepare)
 
     for _, encType := range encoderTypes {
-        enc, err := Create(encType, "test_svc1", "db1", "t1")
+        enc, err := Create(encType, testServ, testDB, testTable)
         test.CheckFail(err, t)
         test.Assert(t, enc.Type() == encType, "type diff")
     }
@@ -86,7 +92,7 @@ func TestMarshalUnmarshal(t *testing.T) {
 
     for _, encType := range encoderTypes {
 
-        enc, err := Create(encType, "test_svc1", "db1", "t1")
+        enc, err := Create(encType, testServ, testDB, testTable)
         test.CheckFail(err, t)
 
         for _, cf := range testBasicResult {
@@ -102,6 +108,23 @@ func TestMarshalUnmarshal(t *testing.T) {
         }
     }
 }
+
+func TestUnmarshalError(t *testing.T) {
+    Prepare(t, testBasicPrepare)
+
+    for _, encType := range encoderTypes {
+        enc, err := Create(encType, testServ, testDB, testTable)
+        test.CheckFail(err, t)
+
+        for _, encoded := range testErrorDecoding {
+            _, err := enc.DecodeToCommonFormat(encoded)
+            test.Assert(t, err != nil, "not getting an error from garbage input")
+        }
+    }
+
+}
+
+//TODO: add test to ensure bad connection gives error and not panic in create
 
 func ExecSQL(db *sql.DB, t *testing.T, query string) {
 	test.CheckFail(util.ExecSQL(db, query), t)
