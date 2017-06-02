@@ -95,6 +95,8 @@ func GetCommonFormatKey(cf *types.CommonFormatEvent) string {
 	return key
 }
 
+// CommonFormatEncode encodes a CommonFormatEvent into the given
+// encoding type
 func CommonFormatEncode(c *types.CommonFormatEvent, encType string) ([]byte, error) {
 	if encType == "json" {
 		return json.Marshal(c)
@@ -105,6 +107,8 @@ func CommonFormatEncode(c *types.CommonFormatEvent, encType string) ([]byte, err
 	}
 }
 
+// DecodeToCommonFormat decodes a byte array into a
+// CommonFormatEvent based on the given encoding
 func DecodeToCommonFormat(b []byte, encType string) (*types.CommonFormatEvent, error) {
 	res := &types.CommonFormatEvent{}
 	var err error
