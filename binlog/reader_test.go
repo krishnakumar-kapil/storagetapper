@@ -23,6 +23,7 @@ package binlog
 import (
 	"bytes"
 	"database/sql"
+	"fmt"
 	"os"
 	"reflect"
 	"sync/atomic"
@@ -463,15 +464,27 @@ func consumeTableEvents(pc pipe.Consumer, db string, table string, result []type
 		var cf *types.CommonFormatEvent
 		switch m := b.(type) {
 		case *types.RowMessage:
+
+			// if m.Key == "11" {
+			// fmt.Println("sup")
+			// }
+			if len(*m.Data) > 1 {
+				fmt.Println("sup")
+			}
 			b, err = enc.Row(m.Type, m.Data, m.SeqNo)
 			test.CheckFail(err, t)
+			// log.Errorf("encType: %+v", encoder.GetDefaultEncoderType())
+			// log.Errorf("b: %+v", b.([]byte))
+
 			cf, err = encoder.DecodeToCommonFormat(b.([]byte))
+			// log.Errorf("cf: %+v", cf)
 			test.CheckFail(err, t)
 		case []byte:
-			buf := bytes.NewBuffer(b.([]byte))
+			// buf := bytes.NewBuffer(b.([]byte))
 
 			cf = &types.CommonFormatEvent{}
-			bd, err := encoder.GetBufferedDecoder(buf, cf)
+			var buf *bytes.Buffer
+			bd, err := encoder.GetBufferedDecoder(b.([]byte), buf, cf)
 			// dec := json.NewDecoder(buf)
 			// err = dec.Decode(&cf)
 			test.CheckFail(err, t)
@@ -484,6 +497,33 @@ func consumeTableEvents(pc pipe.Consumer, db string, table string, result []type
 				test.CheckFail(err, t)
 			}
 		}
+
+		switch typ := (cf.Key[0]).(type) {
+		case int64:
+			// (cf.Key)[0]) = float64(cf.Key[0].(int64))
+			cf.Key[0] = float64(cf.Key[0].(int64))
+			fmt.Println(typ)
+		}
+
+		if cf.Fields != nil {
+			for f := range *cf.Fields {
+				switch typ := ((*cf.Fields)[f].Value).(type) {
+				case int64:
+					val := ((*cf.Fields)[f].Value).(int64)
+					newFloat := float64(val)
+					// (*cf.Fields)[f].Value = interface{}(&newFloat)
+					(*cf.Fields)[f].Value = newFloat
+					fmt.Println(typ)
+					// case []byte:
+					// fmt.Println("byt")
+					// fmt.Println(typ)
+				}
+			}
+		}
+
+		// for f, val := range cf.Fields {
+		// cf.Fields[f] = (float64)f
+		// }
 
 		cf.SeqNo -= 1000000
 		cf.Timestamp = 0

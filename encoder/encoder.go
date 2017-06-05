@@ -133,14 +133,16 @@ func DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error) {
 	return res, err
 }
 
-func GetBufferedDecoder(buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd *BufferedDecoder, err error) {
+func GetBufferedDecoder(data []byte, buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd *BufferedDecoder, err error) {
 	// func GetBufferedDecoder(buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd *BufferedDecoder, cfEvent *types.CommonFormatEvent, err error) {
 	// cfEvent = &types.CommonFormatEvent{}
 	bd = &BufferedDecoder{}
+	buf = bytes.NewBuffer(data)
 	if defaultEncoderType == "json" {
 		dec := json.NewDecoder(buf)
 		err = dec.Decode(cfEvent)
 		if err != nil {
+			log.Errorf("Issue in GetBufferedDecoder")
 			return
 		}
 		bd.JsonDec = dec
@@ -152,6 +154,14 @@ func GetBufferedDecoder(buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd
 			return
 		}
 		bd.MsgDec = dec
+		var payload []byte
+		payload, err = msgp.Skip(data)
+		if err != nil {
+			// err = err2
+			// log.Errorf("skip failed")
+			return
+		}
+		buf = bytes.NewBuffer(payload)
 	} else {
 		err = fmt.Errorf("Unsupported defaulted encoder type")
 	}
@@ -180,10 +190,15 @@ func BufferedReadFrom(buf *bytes.Buffer, bd *BufferedDecoder) (err error) {
 		// _, err = buf.ReadFrom(newReader)
 
 		// _, err = buf.ReadFrom(bytes.NewReader(buf.Bytes()))
-		log.Debugf("BD: %v", len(buf.Bytes()))
-		_, err = buf.ReadFrom(bd.MsgDec.R)
-		log.Debugf("Post BD: %v", len(buf.Bytes()))
+		// log.Errorf("BD: %v", len(buf.Bytes()))
+		// bd.MsgDec.Reset()
+		// bd.MsgDec.Skip()
+		// log.Errorf("before R: %+v", bd.MsgDec.R)
+		// _, err = buf.ReadFrom(bd.MsgDec.R)
+		// log.Errorf("R: %+v", bd.MsgDec.R)
+		// log.Errorf("Post BD: %v", len(buf.Bytes()))
 		// _, err = buf.ReadFrom(bd.MsgDec)
+		log.Errorf("continue")
 	} else {
 		err = fmt.Errorf("Unsupported defaulted encoder type")
 	}

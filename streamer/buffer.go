@@ -52,9 +52,10 @@ func (s *Streamer) getTag() map[string]string {
 
 func (s *Streamer) encodeCommonFormat(data []byte) (key string, outMsg []byte, err error) {
 
-	buf := bytes.NewBuffer(data)
+	// buf := bytes.NewBuffer(data)
+	var buf *bytes.Buffer
 	cfEvent := &types.CommonFormatEvent{}
-	bd, err := encoder.GetBufferedDecoder(buf, cfEvent)
+	bd, err := encoder.GetBufferedDecoder(data, buf, cfEvent)
 
 	// bd, cfEvent, err := encoder.GetBufferedDecoder(buf)
 	if log.EL(s.log, err) {

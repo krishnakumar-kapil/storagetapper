@@ -20,10 +20,10 @@
 
 package encoder
 
-import (
-	// "github.com/tinylib/msgp"
-	"github.com/uber/storagetapper/types"
-)
+import
+// "github.com/tinylib/msgp"
+
+"github.com/uber/storagetapper/types"
 
 //go:generate msgp
 
@@ -34,11 +34,40 @@ func init() {
 // msgPackEncoder implements Encoder interface into message pack format.
 // It inherits the methods from commonFormatEnocder.
 type msgPackEncoder struct {
-	commonFormatEncoder
+	c commonFormatEncoder
 }
 
 func initMsgPackEncoder(service string, db string, table string) (Encoder, error) {
-	return &msgPackEncoder{commonFormatEncoder{Service: service, Db: db, Table: table}}, nil
+	return &msgPackEncoder{c: commonFormatEncoder{Service: service, Db: db, Table: table}}, nil
+}
+
+//Schema returns table schema
+func (e *msgPackEncoder) Schema() *types.TableSchema {
+	return e.c.inSchema
+}
+
+//Row encodes row into CommonFormat
+func (e *msgPackEncoder) Row(tp int, row *[]interface{}, seqno uint64) ([]byte, error) {
+	cf := e.c.convertRowToCommonFormat(tp, row, e.c.inSchema, seqno, e.c.filter)
+	return e.CommonFormatEncode(cf)
+}
+
+/*UpdateCodec refreshes the schema from state DB */
+func (e *msgPackEncoder) UpdateCodec() error {
+	return e.c.UpdateCodec()
+}
+
+//CommonFormat encodes common format event into byte array
+func (e *msgPackEncoder) CommonFormat(cf *types.CommonFormatEvent) ([]byte, error) {
+	if cf.Type == "schema" {
+		err := e.c.UpdateCodec()
+		if err != nil {
+			return nil, err
+		}
+	}
+	//FIXME: Assume that cf is in input schema format, so we need to filter it
+	//to conform to output schema
+	return e.CommonFormatEncode(cf)
 }
 
 //Type returns this encoder type

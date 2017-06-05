@@ -73,6 +73,7 @@ func (e *commonFormatEncoder) Schema() *types.TableSchema {
 
 //Row encodes row into CommonFormat
 func (e *commonFormatEncoder) Row(tp int, row *[]interface{}, seqno uint64) ([]byte, error) {
+	log.Errorf("CALLING ROW")
 	cf := e.convertRowToCommonFormat(tp, row, e.inSchema, seqno, e.filter)
 	return e.CommonFormatEncode(cf)
 }
