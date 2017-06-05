@@ -133,7 +133,7 @@ func TestBasic(t *testing.T) {
 		if err != nil {
 			test.CheckFail(err, t)
 		} else {
-			cf, err := encoder.DecodeToCommonFormat(data, "json")
+			cf, err := encoder.DecodeToCommonFormat(data)
 			cf.Timestamp = 0
 			test.CheckFail(err, t)
 			refcf := types.CommonFormatEvent{Type: "insert", Key: []interface{}{float64(i)}, SeqNo: 0, Timestamp: 0, Fields: &[]types.CommonFormatField{{Name: "f1", Value: float64(i)}, {Name: "f2", Value: strconv.FormatInt(i, 10)}, {Name: "f3", Value: float64(i) / 3}}}
@@ -201,7 +201,7 @@ func TestMoreFieldTypes(t *testing.T) {
 	for s.HasNext() {
 		key, msg, err := s.GetNext()
 		test.CheckFail(err, t)
-		d, err := encoder.DecodeToCommonFormat(msg, "json")
+		d, err := encoder.DecodeToCommonFormat(msg)
 		test.CheckFail(err, t)
 		log.Debugf("%+v %+v %+v %+v", key, d, d.Fields, err)
 	}
@@ -245,7 +245,7 @@ func TestSnapshotConsistency(t *testing.T) {
 		if err != nil {
 			test.CheckFail(err, t)
 		} else {
-			cf, err := encoder.DecodeToCommonFormat(data, "json")
+			cf, err := encoder.DecodeToCommonFormat(data)
 			// cf, err := encoder.CommonFormatDecode(data)
 			test.CheckFail(err, t)
 			cf.Timestamp = 0

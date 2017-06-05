@@ -21,6 +21,7 @@
 package encoder
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/uber/storagetapper/db"
@@ -131,13 +132,15 @@ func CommonFormatUpdateCodecFromDB(enc Encoder) error {
 }
 
 //CommonFormatDecode decodes CommonFormat event from byte array
-func (e *commonFormatEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
-	return DecodeToCommonFormat(c, "json")
+func (e *commonFormatEncoder) CommonFormatDecode(b []byte) (*types.CommonFormatEvent, error) {
+	res := &types.CommonFormatEvent{}
+	err := json.Unmarshal(b, res)
+	return res, err
 }
 
 //CommonFormatEncode encodes CommonFormatEvent into byte array
 func (e *commonFormatEncoder) CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
-	return CommonFormatEncode(c, "json")
+	return json.Marshal(c)
 }
 
 func fillCommonFormatKey(e *types.CommonFormatEvent, row *[]interface{}, s *types.TableSchema) {

@@ -294,7 +294,8 @@ func (b *reader) wrapEvent(key string, bd []byte, seqno uint64) ([]byte, error) 
 		Fields:    nil,
 	}
 
-	cfb, err := encoder.CommonFormatEncode(&cfw, "json")
+	// cfb, err := encoder.CommonFormatEncode(&cfw, "json")
+	cfb, err := encoder.CommonFormatEncode(&cfw)
 	if err != nil {
 		return nil, err
 	}

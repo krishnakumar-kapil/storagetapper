@@ -21,8 +21,11 @@
 package encoder
 
 import (
+	// "github.com/tinylib/msgp"
 	"github.com/uber/storagetapper/types"
 )
+
+//go:generate msgp
 
 func init() {
 	registerPlugin("msgpack", initMsgPackEncoder)
@@ -48,10 +51,15 @@ func (e *msgPackEncoder) Type() string {
 // By overriding these 2 methods we get full functionality of commonFormatEncoder
 // that implements MessagePack
 func (e *msgPackEncoder) CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
-	return CommonFormatEncode(c, "msgpack")
+	return c.MarshalMsg(nil)
+	// return msgpack.Marshal(c)
 }
 
 // CommonFormatDecode decodes CommonFormatEvent from byte array based on the msgpack encoding system
-func (e *msgPackEncoder) CommonFormatDecode(c []byte) (*types.CommonFormatEvent, error) {
-	return DecodeToCommonFormat(c, "msgpack")
+func (e *msgPackEncoder) CommonFormatDecode(b []byte) (*types.CommonFormatEvent, error) {
+	res := &types.CommonFormatEvent{}
+	// err := msgpack.Unmarshal(b, res)
+	_, err := res.UnmarshalMsg(b)
+	return res, err
+	// return res, err
 }

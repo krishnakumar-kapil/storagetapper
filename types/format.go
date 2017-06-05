@@ -20,6 +20,8 @@
 
 package types
 
+//go:generate msgp
+
 //CommonFormatEvent types
 const (
 	Insert int = iota
@@ -36,9 +38,9 @@ type CommonFormatField struct {
 //CommonFormatEvent is a generic format which represents single data
 //modification event
 type CommonFormatEvent struct {
-	Type      string //insert, delete, schema
-	Key       []interface{}
-	SeqNo     uint64
-	Timestamp int64                //This only used for metrics, to measure time in buffer
+	Type      string               `msg:"type"` //insert, delete, schema
+	Key       []interface{}        `msg:"key"`
+	SeqNo     uint64               `msg:"seqno"`
+	Timestamp int64                `msg:"timestamp"` //This only used for metrics, to measure time in buffer
 	Fields    *[]CommonFormatField `json:",omitempty"`
 }

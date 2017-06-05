@@ -80,24 +80,26 @@ var testBasicPrepare = []string{
 func TestType(t *testing.T) {
 	Prepare(t, testBasicPrepare)
 
-	for _, encType := range encoderTypes {
-		enc, err := Create(encType, testServ, testDB, testTable)
+	for _, encoderType := range encoderTypes {
+		enc, err := Create(encoderType, testServ, testDB, testTable)
 		test.CheckFail(err, t)
-		test.Assert(t, enc.Type() == encType, "type diff")
+		test.Assert(t, enc.Type() == encoderType, "type diff")
 	}
 }
 
 func TestMarshalUnmarshal(t *testing.T) {
 	Prepare(t, testBasicPrepare)
 
+	// changes the global encoder type
 	for _, encType := range encoderTypes {
+		defaultEncoderType = encType
 
 		for _, cf := range testBasicResult {
 			log.Debugf("Initial CF: %v\n", cf)
-			encoded, err := CommonFormatEncode(&cf, encType)
+			encoded, err := CommonFormatEncode(&cf)
 			test.CheckFail(err, t)
 
-			decoded, err := DecodeToCommonFormat(encoded, encType)
+			decoded, err := DecodeToCommonFormat(encoded)
 			log.Debugf("Post CF: %v\n", decoded)
 			test.CheckFail(err, t)
 
@@ -109,10 +111,12 @@ func TestMarshalUnmarshal(t *testing.T) {
 func TestUnmarshalError(t *testing.T) {
 	Prepare(t, testBasicPrepare)
 
+	// changes the global encoder type
 	for _, encType := range encoderTypes {
+		defaultEncoderType = encType
 
 		for _, encoded := range testErrorDecoding {
-			_, err := DecodeToCommonFormat(encoded, encType)
+			_, err := DecodeToCommonFormat(encoded)
 			test.Assert(t, err != nil, "not getting an error from garbage input")
 		}
 	}

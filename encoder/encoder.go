@@ -21,12 +21,15 @@
 package encoder
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
 
+	"github.com/ngaut/log"
+	"github.com/tinylib/msgp/msgp"
+	"github.com/uber/storagetapper/config"
 	"github.com/uber/storagetapper/types"
-	msgpack "gopkg.in/vmihailenco/msgpack.v2"
 )
 
 //encoderConstructor initializes encoder plugin
@@ -34,6 +37,8 @@ type encoderConstructor func(service string, db string, table string) (Encoder, 
 
 //plugins insert their constructors into this map
 var encoders map[string]encoderConstructor
+
+var defaultEncoderType = config.Get().EncoderType
 
 //registerPlugin should be called from plugin's init
 func registerPlugin(name string, init encoderConstructor) {
@@ -50,6 +55,11 @@ type Encoder interface {
 	UpdateCodec() error
 	Type() string
 	Schema() *types.TableSchema
+}
+
+type BufferedDecoder struct {
+	JsonDec *json.Decoder
+	MsgDec  *msgp.Reader
 }
 
 //Create is a factory which create encoder of given type for given service, db,
@@ -96,26 +106,90 @@ func GetCommonFormatKey(cf *types.CommonFormatEvent) string {
 }
 
 // CommonFormatEncode encodes a CommonFormatEvent into the given
-// encoding type
-func CommonFormatEncode(c *types.CommonFormatEvent, encType string) ([]byte, error) {
-	if encType == "json" {
+// encoding type specified by config
+func CommonFormatEncode(c *types.CommonFormatEvent) ([]byte, error) {
+	if defaultEncoderType == "json" {
 		return json.Marshal(c)
-	} else if encType == "msgpack" {
-		return msgpack.Marshal(c)
+	} else if defaultEncoderType == "msgpack" {
+		return c.MarshalMsg(nil)
+		// return msgpack.Marshal(c)
 	} else {
 		return nil, fmt.Errorf("Use supported encoders")
 	}
 }
 
 // DecodeToCommonFormat decodes a byte array into a
-// CommonFormatEvent based on the given encoding
-func DecodeToCommonFormat(b []byte, encType string) (*types.CommonFormatEvent, error) {
+// CommonFormatEvent based on the given encoding type
+// specified by the config
+func DecodeToCommonFormat(b []byte) (*types.CommonFormatEvent, error) {
 	res := &types.CommonFormatEvent{}
 	var err error
-	if encType == "json" {
+	if defaultEncoderType == "json" {
 		err = json.Unmarshal(b, res)
-	} else if encType == "msgpack" {
-		err = msgpack.Unmarshal(b, res)
+	} else if defaultEncoderType == "msgpack" {
+		_, err = res.UnmarshalMsg(b)
+		// err = msgpack.Unmarshal(b, res)
 	}
 	return res, err
+}
+
+func GetBufferedDecoder(buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd *BufferedDecoder, err error) {
+	// func GetBufferedDecoder(buf *bytes.Buffer, cfEvent *types.CommonFormatEvent) (bd *BufferedDecoder, cfEvent *types.CommonFormatEvent, err error) {
+	// cfEvent = &types.CommonFormatEvent{}
+	bd = &BufferedDecoder{}
+	if defaultEncoderType == "json" {
+		dec := json.NewDecoder(buf)
+		err = dec.Decode(cfEvent)
+		if err != nil {
+			return
+		}
+		bd.JsonDec = dec
+	} else if defaultEncoderType == "msgpack" {
+		dec := msgp.NewReader(buf)
+		// err = msgp.Decode(dec, cfEvent)
+		err = cfEvent.DecodeMsg(dec)
+		if err != nil {
+			return
+		}
+		bd.MsgDec = dec
+	} else {
+		err = fmt.Errorf("Unsupported defaulted encoder type")
+	}
+	return
+}
+
+func BufferedReadFrom(buf *bytes.Buffer, bd *BufferedDecoder) (err error) {
+	if defaultEncoderType == "json" {
+		// func (dec *Decoder) Buffered() io.Reader {
+		// return bytes.NewReader(dec.buf[dec.scanp:])
+		// }
+		// }
+		bufReader := bd.JsonDec.Buffered()
+		// _, err = buf.ReadFrom(bd.JsonDec.Buffered())
+		_, err = buf.ReadFrom(bufReader)
+	} else if defaultEncoderType == "msgpack" {
+		// _, err = buf.ReadFrom(bd.MsgDec.Buffered())
+		// What does this read from really do
+		// Issue is cannot reset the size of the buffer
+		// byteData := buf.Bytes()
+		// bufferedIndex := bd.MsgDec.Buffered()
+
+		// newReader := bytes.NewReader(buf[bd.MsgDec.Buffered():])
+		// feels like this replaces the orig buffer?
+		// newReader := bytes.NewReader(byteData[bufferedIndex:])
+		// _, err = buf.ReadFrom(newReader)
+
+		// _, err = buf.ReadFrom(bytes.NewReader(buf.Bytes()))
+		log.Debugf("BD: %v", len(buf.Bytes()))
+		_, err = buf.ReadFrom(bd.MsgDec.R)
+		log.Debugf("Post BD: %v", len(buf.Bytes()))
+		// _, err = buf.ReadFrom(bd.MsgDec)
+	} else {
+		err = fmt.Errorf("Unsupported defaulted encoder type")
+	}
+	return
+}
+
+func GetDefaultEncoderType() string {
+	return defaultEncoderType
 }

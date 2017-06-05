@@ -23,7 +23,6 @@ package binlog
 import (
 	"bytes"
 	"database/sql"
-	"encoding/json"
 	"os"
 	"reflect"
 	"sync/atomic"
@@ -447,7 +446,8 @@ func initConsumeTableEvents(p pipe.Pipe, db string, table string, t *testing.T) 
 }
 
 func consumeTableEvents(pc pipe.Consumer, db string, table string, result []types.CommonFormatEvent, t *testing.T) {
-	enc, err := encoder.Create("json", "test_svc1", db, table)
+	// enc, err := encoder.Create("json", "test_svc1", db, table)
+	enc, err := encoder.Create("msgpack", "test_svc1", db, table)
 	test.CheckFail(err, t)
 
 	for i, v := range result {
@@ -465,20 +465,22 @@ func consumeTableEvents(pc pipe.Consumer, db string, table string, result []type
 		case *types.RowMessage:
 			b, err = enc.Row(m.Type, m.Data, m.SeqNo)
 			test.CheckFail(err, t)
-			cf, err = encoder.DecodeToCommonFormat(b.([]byte), "json")
+			cf, err = encoder.DecodeToCommonFormat(b.([]byte))
 			test.CheckFail(err, t)
 		case []byte:
 			buf := bytes.NewBuffer(b.([]byte))
 
 			cf = &types.CommonFormatEvent{}
-			dec := json.NewDecoder(buf)
-			err = dec.Decode(&cf)
+			bd, err := encoder.GetBufferedDecoder(buf, cf)
+			// dec := json.NewDecoder(buf)
+			// err = dec.Decode(&cf)
 			test.CheckFail(err, t)
 
 			if cf.Type != "schema" {
-				_, err = buf.ReadFrom(dec.Buffered())
+				err = encoder.BufferedReadFrom(buf, bd)
+				// _, err = buf.ReadFrom(dec.Buffered())
 				test.CheckFail(err, t)
-				cf, err = encoder.DecodeToCommonFormat(buf.Bytes(), "json")
+				cf, err = encoder.DecodeToCommonFormat(buf.Bytes())
 				test.CheckFail(err, t)
 			}
 		}
@@ -636,7 +638,8 @@ func TestReaderShutdown(t *testing.T) {
 
 func TestMain(m *testing.M) {
 	cfg = test.LoadConfig()
-	cfg.ReaderOutputFormat = "json"
+	// cfg.ReaderOutputFormat = "json"
+	cfg.ReaderOutputFormat = "msgpack"
 	cfg.MaxNumProcs = 1
 	log.Debugf("Config loaded %v", cfg)
 	os.Exit(m.Run())

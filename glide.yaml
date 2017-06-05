@@ -12,3 +12,5 @@ import:
 - package: go.uber.org/zap
   version: 1.4.0
 - package: gopkg.in/vmihailenco/msgpack.v2
+- package: github.com/tinylib/msgp
+  version: ~1.0.1

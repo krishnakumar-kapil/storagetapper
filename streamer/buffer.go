@@ -22,7 +22,6 @@ package streamer
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -43,12 +42,45 @@ func (s *Streamer) getTag() map[string]string {
 	}
 }
 
-func (s *Streamer) encodeCommonFormat(data []byte) (key string, outMsg []byte, err error) {
-	buf := bytes.NewBuffer(data)
+// func (s *Streamer) readFrom(buf bytes.Buffer, jsonDec json.Decoder, msgDec msgp.Deacoder, cfEvent *types.CommonFormatEvent) (err error) {
+// if encoder.GetDefaultEncoderType() == "json" {
+// _, err = buf.ReadFrom(jsonDec.Buffered())
+// } else if encoder.GetDefaultEncoderType() == "msgpack" {
+// _, err = buf.ReadFrom(msgDec.Buffered())
+// }
+// }
 
+func (s *Streamer) encodeCommonFormat(data []byte) (key string, outMsg []byte, err error) {
+
+	buf := bytes.NewBuffer(data)
 	cfEvent := &types.CommonFormatEvent{}
-	dec := json.NewDecoder(buf)
-	err = dec.Decode(&cfEvent)
+	bd, err := encoder.GetBufferedDecoder(buf, cfEvent)
+
+	// bd, cfEvent, err := encoder.GetBufferedDecoder(buf)
+	if log.EL(s.log, err) {
+		log.Errorf("error getting decoder: %v %v", data, len(data))
+		return
+	}
+
+	// cfEvent := &types.CommonFormatEvent{}
+	// if encoder.GetDefaultEncoderType() == "json" {
+	// dec = json.NewDecoder(buf)
+	// err = dec.Decode(&cfEvent)
+	// } else if encoder.GetDefaultEncoderType() == "msgpack" {
+	// dec = msgp.NewReader(buf)
+	// err = msgp.Decode(reader, cfEvent)
+	// } else {
+	// err = fmt.Errof("Unsupported defaulted encoder type")
+	// return
+	// }
+
+	// reader := msgp.NewReader(data)
+
+	// err := msgp.Decode(reader, cfEvent)
+	// err := cfEvent.DecodeMsg(reader)
+	// cfEvent, err := encoder.DecodeToCommonFormat(data)
+	// rd := cfEvent.NewReader()
+
 	if log.EL(s.log, err) {
 		log.Errorf("broken event: %v %v", data, len(data))
 		return
@@ -66,20 +98,22 @@ func (s *Streamer) encodeCommonFormat(data []byte) (key string, outMsg []byte, e
 
 		key = encoder.GetCommonFormatKey(cfEvent)
 	} else if cfEvent.Type == s.outputFormat {
-		_, err = buf.ReadFrom(dec.Buffered())
+		// _, err = buf.ReadFrom(dec.Buffered())
+		err = encoder.BufferedReadFrom(buf, bd)
 		if log.EL(s.log, err) {
 			return
 		}
 		outMsg = buf.Bytes()
 		key = cfEvent.Key[0].(string)
 		//		log.Debugf("Data in final format already. Forwarding. Key=%v, SeqNo=%v", key, cfEvent.SeqNo)
-	} else if cfEvent.Type == "json" {
-		_, err = buf.ReadFrom(dec.Buffered())
+	} else if cfEvent.Type == "json" || cfEvent.Type == "msgpack" {
+		// _, err = buf.ReadFrom(dec.Buffered())
+		err = encoder.BufferedReadFrom(buf, bd)
 		if log.EL(s.log, err) {
 			return
 		}
 		var ev *types.CommonFormatEvent
-		ev, err = encoder.DecodeToCommonFormat(buf.Bytes(), "json")
+		ev, err = encoder.DecodeToCommonFormat(buf.Bytes())
 		if log.EL(s.log, err) {
 			return
 		}
